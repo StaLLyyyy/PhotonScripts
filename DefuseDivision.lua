@@ -30,6 +30,9 @@ local opt_c4timer = menu:add_checkbox("C4 Timer", false)
 
 local opt_weapon_esp = menu:add_checkbox("Player Weapon ESP", false)
 local opt_teamcheck = menu:add_checkbox("Team Check", false)
+local opt_c4_carrier = menu:add_checkbox("C4 Carrier ESP", false)
+local opt_kit_carrier = menu:add_checkbox("Defuse Kit ESP", false)
+local opt_helmet_esp = menu:add_checkbox("Helmet ESP", false)
 
 local workspace = game:get_service("Workspace")
 local players_service = game:get_service("Players")
@@ -246,7 +249,7 @@ local function safe_render()
                                     local vel = handle.velocity
                                     local speed_sq = vel.x*vel.x + vel.y*vel.y + vel.z*vel.z
                                     
-                                    if speed_sq < 0.1 then
+                                    if speed_sq < 1 then
                                         if not grenade_stop_times[identity] then
                                             grenade_stop_times[identity] = current_time
                                         end
@@ -297,7 +300,7 @@ local function safe_render()
                                         end
                                         draw_timer_circle(wts, remaining, max_duration, display_name, name_col, dist)
                                     end
-                                elseif name ~= "Molotov" and name ~= "Incendiary" then
+                                else
                                     local wts = world_to_screen(handle.position)
                                     if in_screen(wts) then
                                         if name == "SmokeGrenade" then
@@ -549,6 +552,36 @@ hook.add("esp_drawextra", "dd_weapon_esp", function(plr)
                  local name = gun_val:get_value_string()
                  render.add_extra(name, ESP_BOTTOM_ID, col_white)
              end
+        end
+    end
+
+    if opt_c4_carrier:get_value() then
+        local char = plr.character
+        if char and char:isvalid() then
+            local c4_val = char:find_first_child("HasC4")
+            if c4_val and c4_val:isvalid() and c4_val:isa("BoolValue") then
+                render.add_extra("C4", ESP_RIGHT or 2, color(1, 0, 0, 1))
+            end
+        end
+    end
+
+    if opt_kit_carrier:get_value() then
+        local char = plr.character
+        if char and char:isvalid() then
+            local kit = char:find_first_child("DefuseKit")
+            if kit and kit:isvalid() then
+                render.add_extra("KIT", ESP_RIGHT or 2, color(0.2, 0.8, 1, 1))
+            end
+        end
+    end
+
+    if opt_helmet_esp:get_value() then
+        local char = plr.character
+        if char and char:isvalid() then
+            local helmet = char:find_first_child("RealHelmet")
+            if helmet and helmet:isvalid() and helmet:isa("BoolValue") and helmet:get_value_bool() then
+                render.add_extra("HK", ESP_RIGHT or 2, color(1, 1, 1, 1))
+            end
         end
     end
 end)
