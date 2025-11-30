@@ -1,7 +1,3 @@
-local workspace = game:get_service("Workspace")
-local entities = workspace:find_first_child("Entities")
-local cam = workspace:find_first_child("Camera")
-
 local GUI_WIDTH = 180
 local HEADER_H = 26
 local MOD_H = 24
@@ -39,7 +35,7 @@ local colors = {
     mode_text = color(0.7, 0.7, 0.7, 1)
 }
 
-local panels = {}
+if not panels then panels = {} end
 
 local key_names = {
     [1] = "M1", [2] = "M2", [3] = "M3", [4] = "M3", [5] = "M4", [6] = "M5",
@@ -200,7 +196,6 @@ local function draw_arrow(x, y, size, color, progress)
 end
 
 local last_lmb = false
-local last_rmb = false
 
 local function draw_gui()
     if not menu_active() then return end
@@ -211,6 +206,7 @@ local function draw_gui()
     local lmb_click = lmb and not last_lmb
     local rmb_click = rmb and not last_rmb
     local current_tooltip = nil
+    local consumed = false
     
     if gui_state.binding_element then
         if gui_state.binding_wait_release then
@@ -247,13 +243,15 @@ local function draw_gui()
     end
     
     for _, panel in ipairs(panels) do
-        if lmb_click and is_mouse_over(m.x, m.y, panel.x, panel.y, panel.w, HEADER_H) then
+        if not consumed and lmb_click and is_mouse_over(m.x, m.y, panel.x, panel.y, panel.w, HEADER_H) then
             gui_state.dragging_panel = panel
             gui_state.drag_offset = vector2(m.x - panel.x, m.y - panel.y)
+            consumed = true
         end
         
-        if rmb_click and is_mouse_over(m.x, m.y, panel.x, panel.y, panel.w, HEADER_H) then
+        if not consumed and rmb_click and is_mouse_over(m.x, m.y, panel.x, panel.y, panel.w, HEADER_H) then
             panel.expanded = not panel.expanded
+            consumed = true
         end
 
         render.add_rect_filled(vector2(panel.x, panel.y), vector2(panel.x + panel.w, panel.y + HEADER_H), panel.color, 0)
@@ -268,14 +266,18 @@ local function draw_gui()
             local y_offset = panel.y + HEADER_H
             
             for _, mod in ipairs(panel.modules) do
-                if is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, MOD_H) then
-                    if lmb_click then mod.value = not mod.value end
+                if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, MOD_H) then
+                    if lmb_click then 
+                        mod.value = not mod.value 
+                        consumed = true
+                    end
                     if mod.tooltip then current_tooltip = mod.tooltip end
                 end
                 
-                if rmb_click and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, MOD_H) then
+                if not consumed and rmb_click and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, MOD_H) then
                     if mod.settings then
                         mod.settings_open = not mod.settings_open
+                        consumed = true
                     end
                 end
 
@@ -300,8 +302,11 @@ local function draw_gui()
                 if mod.settings_open and mod.settings then
                     for _, setting in ipairs(mod.settings) do
                         if setting.type == "slider" then
-                            if is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
-                                if lmb_click then gui_state.dragging_slider = setting end
+                            if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
+                                if lmb_click then 
+                                    gui_state.dragging_slider = setting 
+                                    consumed = true
+                                end
                                 if setting.tooltip then current_tooltip = setting.tooltip end
                             end
                             
@@ -323,8 +328,11 @@ local function draw_gui()
                             y_offset = y_offset + SET_H
                             
                         elseif setting.type == "color" then
-                            if is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
-                                if lmb_click then setting.open = not setting.open end
+                            if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
+                                if lmb_click then 
+                                    setting.open = not setting.open 
+                                    consumed = true
+                                end
                                 if setting.tooltip then current_tooltip = setting.tooltip end
                             end
 
@@ -343,13 +351,19 @@ local function draw_gui()
                             if setting.open then
                                 local picker_height = 4 + PALETTE_H + 6 + HUE_H + 6 + ALPHA_H + 6
                                 render.add_rect_filled(vector2(panel.x, y_offset), vector2(panel.x + panel.w, y_offset + picker_height), color(0.1, 0.1, 0.1, 0.9), 0)
+                                if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, picker_height) and lmb_click then
+                                     consumed = true
+                                end
                                 draw_color_picker(setting, panel.x, y_offset, panel.w, m, lmb_click)
                                 y_offset = y_offset + picker_height
                             end
 
                         elseif setting.type == "bool" then
-                             if is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
-                                if lmb_click then setting.value = not setting.value end
+                             if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
+                                if lmb_click then 
+                                    setting.value = not setting.value 
+                                    consumed = true
+                                end
                                 if setting.tooltip then current_tooltip = setting.tooltip end
                              end
                              render.add_rect_filled(vector2(panel.x, y_offset), vector2(panel.x + panel.w, y_offset + SET_H), colors.bg_dark, 0)
@@ -363,16 +377,18 @@ local function draw_gui()
                             y_offset = y_offset + SET_H
 
                         elseif setting.type == "keybind" then
-                            if is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
+                            if not consumed and is_mouse_over(m.x, m.y, panel.x, y_offset, panel.w, SET_H) then
                                 if lmb_click then 
                                     gui_state.binding_element = setting 
                                     gui_state.binding_wait_release = true
+                                    consumed = true
                                 end
                                 if rmb_click then
                                     if not setting.mode then setting.mode = "Toggle" end
                                     if setting.mode == "Toggle" then setting.mode = "Hold"
                                     elseif setting.mode == "Hold" then setting.mode = "Always"
                                     else setting.mode = "Toggle" end
+                                    consumed = true
                                 end
                                 if setting.tooltip then current_tooltip = setting.tooltip end
                             end
@@ -406,13 +422,8 @@ local function draw_gui()
     end
     
     last_lmb = lmb
-    last_rmb = rmb
-end
-
-local function draw_esp()
 end
 
 hook.add("render", "cheat_render", function()
-    draw_esp()
     draw_gui()
 end)
