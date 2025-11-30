@@ -196,6 +196,7 @@ local function draw_arrow(x, y, size, color, progress)
 end
 
 local last_lmb = false
+local last_rmb = false
 
 local function draw_gui()
     if not menu_active() then return end
@@ -422,6 +423,7 @@ local function draw_gui()
     end
     
     last_lmb = lmb
+    last_rmb = rmb
 end
 
 hook.add("render", "cheat_render", function()
