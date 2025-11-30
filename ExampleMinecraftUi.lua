@@ -4,7 +4,13 @@ A lightweight, render-based GUI library designed for the Photon API. This librar
 
 Integration
 
-To use this library, simply copy the ui_lib.lua code into your script. The library is driven by a global panels table which you must configure to add your features.
+To use this library, you don't need to copy the entire code. You can simply load the latest version from the cloud using the link below.
+
+The library relies on a global panels table, which you must define in your script to configure the interface.
+
+-- Load the library
+loadstring(game:HttpGet("[https://raw.githubusercontent.com/StaLLyyyy/PhotonScripts/refs/heads/main/MinecraftUi.lua](https://raw.githubusercontent.com/StaLLyyyy/PhotonScripts/refs/heads/main/MinecraftUi.lua)"))()
+
 
 Configuration Structure
 
@@ -78,11 +84,12 @@ value (string): Text to display.
 
 Example Usage
 
-Paste this code at the bottom of the ui_lib.lua file (or after the library code) to initialize the menu with example features.
+Use the following script to load the library and apply a configuration.
 
--- Example Configuration
--- Paste this after the UI Library code
+-- 1. Load the Library
+loadstring(game:HttpGet("[https://raw.githubusercontent.com/StaLLyyyy/PhotonScripts/refs/heads/main/MinecraftUi.lua](https://raw.githubusercontent.com/StaLLyyyy/PhotonScripts/refs/heads/main/MinecraftUi.lua)"))()
 
+-- 2. Define your configuration
 panels = {
     { name = "Combat", x = 20, y = 50, w = 180, color = colors.cat_combat, expanded = true, modules = {
         { name = "KillAura", type = "bool", value = false, tooltip = "Auto hit", settings = {
